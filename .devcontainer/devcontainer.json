@@ -1,0 +1,28 @@
+{
+	"name": "uv",
+	"image": "ghcr.io/astral-sh/uv:debian",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {}
+	},
+	"mounts": [
+		{
+			"source": "uv-cache",
+			"target": "/root/.cache/uv",
+			"type": "volume"
+		},
+		{
+			"target": "${containerWorkspaceFolder}/.venv",
+			"type": "volume"
+		}
+	],
+	"postCreateCommand": "uv sync",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"charliermarsh.ruff",
+				"ms-python.python",
+				"tamasfe.even-better-toml"
+			]
+		}
+	}
+}
