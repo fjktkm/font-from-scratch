@@ -15,6 +15,9 @@
 			"type": "volume"
 		}
 	],
+	"containerEnv": {
+		"UV_LINK_MODE": "copy"
+	},
 	"postCreateCommand": "uv sync",
 	"customizations": {
 		"vscode": {
