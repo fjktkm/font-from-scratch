@@ -1,23 +1,5 @@
 import struct
-from itertools import accumulate
 from pathlib import Path
-
-
-def u16(x: int) -> bytes:
-    return x.to_bytes(2, "big", signed=False)
-
-
-def i16(x: int) -> bytes:
-    return x.to_bytes(2, "big", signed=True)
-
-
-def u32(x: int) -> bytes:
-    return x.to_bytes(4, "big", signed=False)
-
-
-def u64(x: int) -> bytes:
-    return x.to_bytes(8, "big", signed=False)
-
 
 ASCENT = 800
 DESCENT = -200
@@ -25,163 +7,173 @@ ADV_WIDTH = 500
 XMIN, YMIN, XMAX, YMAX = 0, 0, 500, 700
 
 
-def build_head():
-    return (
-        u32(0x00010000)  # majorVersion | minorVersion
-        + u32(0x00010000)  # fontRevision
-        + u32(0)  # checkSumAdjustment
-        + u32(0x5F0F3CF5)  # magicNumber
-        + u16(0)  # flags
-        + u16(1000)  # unitsPerEm
-        + u64(0)  # created
-        + u64(0)  # modified
-        + i16(XMIN)  # xMin
-        + i16(YMIN)  # yMin
-        + i16(XMAX)  # xMax
-        + i16(YMAX)  # yMax
-        + u16(0)  # macStyle
-        + u16(0)  # lowestRecPPEM
-        + i16(0)  # fontDirectionHint
-        + i16(1)  # indexToLocFormat
-        + i16(0)  # glyphDataFormat
+def build_head() -> bytes:
+    return struct.pack(
+        ">IIIIHHQQhhhhHHhhh",
+        0x00010000,  # majorVersion | minorVersion
+        0x00010000,  # fontRevision
+        0,  # checkSumAdjustment
+        0x5F0F3CF5,  # magicNumber
+        0,  # flags
+        1000,  # unitsPerEm
+        0,  # created
+        0,  # modified
+        XMIN,  # xMin
+        YMIN,  # yMin
+        XMAX,  # xMax
+        YMAX,  # yMax
+        0,  # macStyle
+        0,  # lowestRecPPEM
+        0,  # fontDirectionHint
+        1,  # indexToLocFormat
+        0,  # glyphDataFormat
     )
 
 
-def build_hhea():
+def build_hhea() -> bytes:
     xMaxExtent = XMAX - XMIN
-    return (
-        u32(0x00010000)  # tableVersion
-        + i16(ASCENT)  # ascender
-        + i16(DESCENT)  # descender
-        + i16(0)  # lineGap
-        + u16(ADV_WIDTH)  # advanceWidthMax
-        + i16(0)  # minLeftSideBearing
-        + i16(0)  # minRightSideBearing
-        + i16(xMaxExtent)  # xMaxExtent
-        + i16(1)  # caretSlopeRise
-        + i16(0)  # caretSlopeRun
-        + i16(0)  # caretOffset
-        + i16(0)  # reserved1
-        + i16(0)  # reserved2
-        + i16(0)  # reserved3
-        + i16(0)  # reserved4
-        + u16(0)  # metricDataFormat
-        + u16(1)  # numberOfHMetrics
+    return struct.pack(
+        ">IhhhHhhhhhhhhhhHH",
+        0x00010000,  # tableVersion
+        ASCENT,  # ascender
+        DESCENT,  # descender
+        0,  # lineGap
+        ADV_WIDTH,  # advanceWidthMax
+        0,  # minLeftSideBearing
+        0,  # minRightSideBearing
+        xMaxExtent,  # xMaxExtent
+        1,  # caretSlopeRise
+        0,  # caretSlopeRun
+        0,  # caretOffset
+        0,  # reserved1
+        0,  # reserved2
+        0,  # reserved3
+        0,  # reserved4
+        0,  # metricDataFormat
+        1,  # numberOfHMetrics
     )
 
 
-def build_maxp():
-    return (
-        u32(0x00010000)  # tableVersion
-        + u16(1)  # numGlyphs
-        + u16(4)  # maxPoints
-        + u16(1)  # maxContours
-        + u16(0)  # maxCompositePoints
-        + u16(0)  # maxCompositeContours
-        + u16(0)  # maxZones
-        + u16(0)  # maxTwilightPoints
-        + u16(0)  # maxStorage
-        + u16(0)  # maxFunctionDefs
-        + u16(0)  # maxInstructionDefs
-        + u16(0)  # maxStackElements
-        + u16(0)  # maxSizeOfInstructions
-        + u16(0)  # maxComponentElements
-        + u16(0)  # maxComponentDepth
+def build_maxp() -> bytes:
+    return struct.pack(
+        ">IHHHHHHHHHHHHHH",
+        0x00010000,  # tableVersion
+        1,  # numGlyphs
+        4,  # maxPoints
+        1,  # maxContours
+        0,  # maxCompositePoints
+        0,  # maxCompositeContours
+        0,  # maxZones
+        0,  # maxTwilightPoints
+        0,  # maxStorage
+        0,  # maxFunctionDefs
+        0,  # maxInstructionDefs
+        0,  # maxStackElements
+        0,  # maxSizeOfInstructions
+        0,  # maxComponentElements
+        0,  # maxComponentDepth
     )
 
 
-def build_os2():
-    return (
-        u16(2)  # version
-        + i16(0)  # xAvgCharWidth
-        + u16(0)  # usWeightClass
-        + u16(0)  # usWidthClass
-        + u16(0)  # fsType
-        + u16(0)  # ySubscriptXSize
-        + u16(0)  # ySubscriptYSize
-        + i16(0)  # ySubscriptXOffset
-        + i16(0)  # ySubscriptYOffset
-        + u16(0)  # ySuperscriptXSize
-        + u16(0)  # ySuperscriptYSize
-        + i16(0)  # ySuperscriptXOffset
-        + i16(0)  # ySuperscriptYOffset
-        + u16(0)  # yStrikeoutSize
-        + i16(0)  # yStrikeoutPosition
-        + i16(0)  # sFamilyClass
-        + bytes(10)  # panose
-        + u32(0)  # ulUnicodeRange1
-        + u32(0)  # ulUnicodeRange2
-        + u32(0)  # ulUnicodeRange3
-        + u32(0)  # ulUnicodeRange4
-        + b"NONE"  # achVendID
-        + u16(0)  # fsSelection
-        + u16(0)  # usFirstCharIndex
-        + u16(0xFFFF)  # usLastCharIndex
-        + i16(ASCENT)  # sTypoAscender
-        + i16(DESCENT)  # sTypoDescender
-        + i16(0)  # sTypoLineGap
-        + u16(ASCENT)  # usWinAscent
-        + u16(-DESCENT)  # usWinDescent
-        + u32(0)  # ulCodePageRange1
-        + u32(0)  # ulCodePageRange2
-        + i16(0)  # sxHeight
-        + i16(0)  # sCapHeight
-        + u16(0)  # usDefaultChar
-        + u16(0)  # usBreakChar
-        + u16(0)  # usMaxContext
+def build_os2() -> bytes:
+    return struct.pack(
+        ">HhHHHHHhhHHhhHhh10sIIII4sHHHhhhHHIIhhHHH",
+        2,  # version
+        0,  # xAvgCharWidth
+        0,  # usWeightClass
+        0,  # usWidthClass
+        0,  # fsType
+        0,  # ySubscriptXSize
+        0,  # ySubscriptYSize
+        0,  # ySubscriptXOffset
+        0,  # ySubscriptYOffset
+        0,  # ySuperscriptXSize
+        0,  # ySuperscriptYSize
+        0,  # ySuperscriptXOffset
+        0,  # ySuperscriptYOffset
+        0,  # yStrikeoutSize
+        0,  # yStrikeoutPosition
+        0,  # sFamilyClass
+        bytes(10),  # panose
+        0,  # ulUnicodeRange1
+        0,  # ulUnicodeRange2
+        0,  # ulUnicodeRange3
+        0,  # ulUnicodeRange4
+        b"NONE",  # achVendID
+        0,  # fsSelection
+        0,  # usFirstCharIndex
+        0xFFFF,  # usLastCharIndex
+        ASCENT,  # sTypoAscender
+        DESCENT,  # sTypoDescender
+        0,  # sTypoLineGap
+        ASCENT,  # usWinAscent
+        -DESCENT,  # usWinDescent
+        0,  # ulCodePageRange1
+        0,  # ulCodePageRange2
+        0,  # sxHeight
+        0,  # sCapHeight
+        0,  # usDefaultChar
+        0,  # usBreakChar
+        0,  # usMaxContext
     )
 
 
-def build_hmtx():
-    return (
-        u16(ADV_WIDTH)  # advanceWidth
-        + i16(0)  # lsb (leftSideBearing)
+def build_hmtx() -> bytes:
+    return struct.pack(
+        ">Hh",
+        ADV_WIDTH,  # advanceWidth
+        0,  # lsb
     )
 
 
-def build_cmap():
-    sub13 = (
-        u16(13)  # format
-        + u16(0)  # reserved
-        + u32(28)  # length
-        + u32(0)  # language
-        + u32(1)  # numGroups
-        + u32(0x00000000)  # startCharCode
-        + u32(0x0010FFFF)  # endCharCode
-        + u32(0)  # startGlyphID
+def build_cmap() -> bytes:
+    sub13 = struct.pack(
+        ">HHIIIIII",
+        13,  # format
+        0,  # reserved
+        28,  # length
+        0,  # language
+        1,  # numGroups
+        0x00000000,  # startCharCode
+        0x0010FFFF,  # endCharCode
+        0,  # startGlyphID
     )
 
-    sub4 = (
-        u16(4)  # format
-        + u16(32)  # length
-        + u16(0)  # language
-        + u16(4)  # segCountX2
-        + u16(4)  # searchRange
-        + u16(1)  # entrySelector
-        + u16(0)  # rangeShift
-        + u16(0x0041)  # endCode[0]
-        + u16(0xFFFF)  # endCode[1]
-        + u16(0)  # reservedPad
-        + u16(0x0041)  # startCode[0]
-        + u16(0xFFFF)  # startCode[1]
-        + u16((-0x0041) & 0xFFFF)  # idDelta[0]
-        + u16(1)  # idDelta[1]
-        + u16(0)  # idRangeOffset[0]
-        + u16(0)  # idRangeOffset[1]
+    sub4 = struct.pack(
+        ">HHHHHHHHHHHHHHHH",
+        4,  # format
+        32,  # length
+        0,  # language
+        4,  # segCountX2
+        4,  # searchRange
+        1,  # entrySelector
+        0,  # rangeShift
+        0x0041,  # endCode[0]
+        0xFFFF,  # endCode[1]
+        0,  # reservedPad
+        0x0041,  # startCode[0]
+        0xFFFF,  # startCode[1]
+        (-0x0041) & 0xFFFF,  # idDelta[0]
+        1,  # idDelta[1]
+        0,  # idRangeOffset[0]
+        0,  # idRangeOffset[1]
     )
 
     num = 2
     off0 = 4 + num * 8
     off1 = off0 + len(sub13)
-    header = (
-        u16(0)  # version
-        + u16(num)  # numberSubtables
+    header = struct.pack(
+        ">HH",
+        0,  # version
+        num,  # numberSubtables
     )
+
     recs = struct.pack(">HHI", 3, 10, off0) + struct.pack(">HHI", 3, 1, off1)
+
     return header + recs + sub13 + sub4
 
 
-def build_loca_and_glyf():
+def build_loca_and_glyf() -> tuple[bytes, bytes]:
     pts = [(XMIN, YMIN), (XMAX, YMIN), (XMAX, YMAX), (XMIN, YMAX)]
     xs = [x for x, _ in pts]
     ys = [y for _, y in pts]
@@ -189,24 +181,32 @@ def build_loca_and_glyf():
     y_d = [ys[0], ys[1] - ys[0], ys[2] - ys[1], ys[3] - ys[2]]
 
     notdef = (
-        i16(1)  # numberOfContours
-        + i16(XMIN)  # xMin
-        + i16(YMIN)  # yMin
-        + i16(XMAX)  # xMax
-        + i16(YMAX)  # yMax
-        + u16(3)  # endPtsOfContours
-        + u16(0)  # instructionLength
+        struct.pack(
+            ">hhhhhHH",
+            1,  # numberOfContours
+            XMIN,  # xMin
+            YMIN,  # yMin
+            XMAX,  # xMax
+            YMAX,  # yMax
+            3,  # endPtsOfContours
+            0,  # instructionLength
+        )
         + bytes([0x01, 0x01, 0x01, 0x01])  # flags
-        + b"".join(i16(v) for v in x_d)  # xCoordinates
-        + b"".join(i16(v) for v in y_d)  # yCoordinates
+        + struct.pack(">hhhh", *x_d)  # xCoordinates
+        + struct.pack(">hhhh", *y_d)  # yCoordinates
     )
 
     glyf = notdef
-    loca = u32(0) + u32(len(glyf))
+    loca = struct.pack(
+        ">II",
+        0,  # offset[0]
+        len(glyf),  # offset[1]
+    )
+
     return loca, glyf
 
 
-def build_name():
+def build_name() -> bytes:
     items = [
         (1, "FontFromScratch"),
         (2, "Regular"),
@@ -221,31 +221,45 @@ def build_name():
     offsets = [sum(lengths[:i]) for i in range(len(lengths))]
 
     entries = [
-        struct.pack(">HHHHHH", 3, 1, 0x0409, nid, ln, off)
+        struct.pack(
+            ">HHHHHH",
+            3,  # platformID (Windows)
+            1,  # encodingID (Unicode BMP)
+            0x0409,  # languageID (English - United States)
+            nid,  # nameID
+            ln,  # length
+            off,  # offset
+        )
         for (nid, _), ln, off in zip(items, lengths, offsets)
     ]
 
     count = len(entries)
-    header = u16(0) + u16(count) + u16(6 + count * 12)
+    header = struct.pack(
+        ">HHH",
+        0,  # format
+        count,  # count
+        6 + count * 12,  # stringOffset
+    )
 
     return header + b"".join(entries) + b"".join(strings)
 
 
-def build_post():
-    return (
-        u32(0x00030000)  # version
-        + u32(0)  # italicAngle
-        + i16(0)  # underlinePosition
-        + i16(0)  # underlineThickness
-        + u32(0)  # isFixedPitch
-        + u32(0)  # minMemType42
-        + u32(0)  # maxMemType42
-        + u32(0)  # minMemType1
-        + u32(0)  # maxMemType1
+def build_post() -> bytes:
+    return struct.pack(
+        ">IIhhIIIII",
+        0x00030000,  # version
+        0,  # italicAngle
+        0,  # underlinePosition
+        0,  # underlineThickness
+        0,  # isFixedPitch
+        0,  # minMemType42
+        0,  # maxMemType42
+        0,  # minMemType1
+        0,  # maxMemType1
     )
 
 
-def build_tables():
+def build_tables() -> dict[bytes, bytes]:
     loca, glyf = build_loca_and_glyf()
     return {
         b"head": build_head(),
@@ -261,64 +275,61 @@ def build_tables():
     }
 
 
-def build_sfnt(tables):
-    def pad4(b: bytes):
+def build_sfnt(tables: dict[bytes, bytes]) -> bytes:
+    def pad4(b: bytes) -> bytes:
         return b + (b"\0" * ((-len(b)) & 3))
 
     def sfnt_checksum(data: bytes) -> int:
-        d = pad4(data)
+        data = pad4(data)
         return (
-            sum(struct.unpack(">I", d[i : i + 4])[0] for i in range(0, len(d), 4))
+            sum(int.from_bytes(data[i : i + 4], "big") for i in range(0, len(data), 4))
             & 0xFFFFFFFF
         )
 
     def log2floor(n: int) -> int:
         return (n.bit_length() - 1) if n > 0 else 0
 
-    tags = sorted(tables.keys())
-    numTables = len(tags)
-    p = 1 << log2floor(numTables)
-    searchRange = p * 16
-    entrySelector = log2floor(numTables)
-    rangeShift = numTables * 16 - searchRange
+    tags = tuple(sorted(tables.keys()))
+    num_tables = len(tags)
+    e = log2floor(num_tables)
+    search_range = (1 << e) * 16
+    entry_selector = e
+    range_shift = num_tables * 16 - search_range
 
     raws = [tables[t] for t in tags]
-    lengths = [len(r) for r in raws]
-    checksums = [
-        sfnt_checksum(r if t != b"head" else r[:8] + b"\0\0\0\0" + r[12:])
-        for t, r in zip(tags, raws)
-    ]
     parts = [pad4(r) for r in raws]
+    lengths = [len(r) for r in raws]
+    checksums = [sfnt_checksum(r) for r in raws]
 
-    base = 12 + numTables * 16
-    offsets_list = [base + o for o in accumulate([0] + [len(p) for p in parts])][:-1]
-    offsets = {t: o for t, o in zip(tags, offsets_list)}
+    base_offset = 12 + num_tables * 16
+    sizes = [len(p) for p in parts]
+    offsets = [base_offset + sum(sizes[:i]) for i in range(len(sizes))]
 
     entries = [
-        t + u32(cs) + u32(off) + u32(length)
-        for t, cs, off, length in zip(tags, checksums, offsets_list, lengths)
+        struct.pack(">4sIII", t, cs, off, length)
+        for t, cs, off, length in zip(tags, checksums, offsets, lengths)
     ]
-    header = (
-        u32(0x00010000)
-        + u16(numTables)
-        + u16(searchRange)
-        + u16(entrySelector)
-        + u16(rangeShift)
+
+    header = struct.pack(
+        ">IHHHH",
+        0x00010000,
+        num_tables,
+        search_range,
+        entry_selector,
+        range_shift,
     )
-    directory = b"".join(entries)
-    payload = b"".join(parts)
 
-    font = bytearray(header + directory + payload)
+    font = bytearray(header + b"".join(entries) + b"".join(parts))
 
-    head_off = offsets[b"head"]
-    font[head_off + 8 : head_off + 12] = b"\0\0\0\0"
-    adj = (0xB1B0AFBA - sfnt_checksum(bytes(font))) & 0xFFFFFFFF
-    font[head_off + 8 : head_off + 12] = u32(adj)
+    head_index = tags.index(b"head")
+    head_offset = base_offset + sum(sizes[:head_index])
+    adjustment = (0xB1B0AFBA - sfnt_checksum(bytes(font))) & 0xFFFFFFFF
+    font[head_offset + 8 : head_offset + 12] = struct.pack(">I", adjustment)
 
     return bytes(font)
 
 
-def main():
+def main() -> None:
     font = build_sfnt(build_tables())
     Path("FontFromScratch.ttf").write_bytes(font)
 
