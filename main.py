@@ -79,9 +79,9 @@ def build_os2() -> bytes:
     return struct.pack(
         ">HhHHHHHhhHHhhHhh10sIIII4sHHHhhhHHIIhhHHH",
         2,  # version
-        0,  # xAvgCharWidth
-        0,  # usWeightClass
-        0,  # usWidthClass
+        ADV_WIDTH,  # xAvgCharWidth
+        400,  # usWeightClass
+        5,  # usWidthClass
         0,  # fsType
         0,  # ySubscriptXSize
         0,  # ySubscriptYSize
@@ -100,8 +100,8 @@ def build_os2() -> bytes:
         0,  # ulUnicodeRange3
         0,  # ulUnicodeRange4
         b"NONE",  # achVendID
-        0,  # fsSelection
-        0,  # usFirstCharIndex
+        0x0040,  # fsSelection
+        0x0000,  # usFirstCharIndex
         0xFFFF,  # usLastCharIndex
         ASCENT,  # sTypoAscender
         DESCENT,  # sTypoDescender
@@ -249,8 +249,8 @@ def build_post() -> bytes:
         ">IIhhIIIII",
         0x00030000,  # version
         0,  # italicAngle
-        0,  # underlinePosition
-        0,  # underlineThickness
+        -75,  # underlinePosition
+        50,  # underlineThickness
         0,  # isFixedPitch
         0,  # minMemType42
         0,  # maxMemType42
