@@ -9,8 +9,9 @@ XMIN, YMIN, XMAX, YMAX = 0, 0, 500, 700
 
 def build_head() -> bytes:
     return struct.pack(
-        ">IIIIHHQQhhhhHHhhh",
-        0x00010000,  # majorVersion | minorVersion
+        ">HHIIIHHQQhhhhHHhhh",
+        1,  # majorVersion
+        0,  # minorVersion
         0x00010000,  # fontRevision
         0,  # checkSumAdjustment
         0x5F0F3CF5,  # magicNumber
