@@ -9,10 +9,9 @@ XMIN, YMIN, XMAX, YMAX = 0, 0, 500, 700
 
 def build_head() -> bytes:
     return struct.pack(
-        ">HHIIIHHQQhhhhHHhhh",
-        1,  # majorVersion
-        0,  # minorVersion
-        0x00010000,  # fontRevision
+        ">IIIIHHQQhhhhHHhhh",
+        0,  # tableVersion
+        0,  # tableVersion
         0,  # checkSumAdjustment
         0x5F0F3CF5,  # magicNumber
         0,  # flags
@@ -35,7 +34,7 @@ def build_hhea() -> bytes:
     xMaxExtent = XMAX - XMIN
     return struct.pack(
         ">IhhhHhhhhhhhhhhHH",
-        0x00010000,  # tableVersion
+        0,  # tableVersion
         ASCENT,  # ascender
         DESCENT,  # descender
         0,  # lineGap
@@ -58,7 +57,7 @@ def build_hhea() -> bytes:
 def build_maxp() -> bytes:
     return struct.pack(
         ">IHHHHHHHHHHHHHH",
-        0x00010000,  # tableVersion
+        0,  # tableVersion
         1,  # numGlyphs
         4,  # maxPoints
         1,  # maxContours
@@ -141,25 +140,20 @@ def build_cmap() -> bytes:
     )
 
     sub4 = struct.pack(
-        ">HHHHHHHHHHHHHHHH",
+        ">HHHHHHHHHHHH",
         4,  # format
-        32,  # length
+        24,  # length
         0,  # language
-        4,  # segCountX2
-        4,  # searchRange
+        2,  # segCountX2
+        2,  # searchRange
         1,  # entrySelector
         0,  # rangeShift
-        0x0041,  # endCode[0]
-        0xFFFF,  # endCode[1]
+        0xFFFF,  # endCode[0]
         0,  # reservedPad
-        0x0041,  # startCode[0]
-        0xFFFF,  # startCode[1]
-        (-0x0041) & 0xFFFF,  # idDelta[0]
-        1,  # idDelta[1]
+        0xFFFF,  # startCode[0]
+        1,  # idDelta[0]
         0,  # idRangeOffset[0]
-        0,  # idRangeOffset[1]
     )
-
     num = 2
     off0 = 4 + num * 8
     off1 = off0 + len(sub13)
