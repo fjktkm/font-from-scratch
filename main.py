@@ -169,10 +169,7 @@ def build_cmap() -> bytes:
 
 
 def build_loca_and_glyf() -> tuple[bytes, bytes]:
-    x_d = [0, 500, 0, -500]
-    y_d = [0, 0, 700, 0]
-
-    notdef = (
+    glyf = (
         struct.pack(
             ">hhhhhHH",
             1,  # numberOfContours
@@ -184,11 +181,10 @@ def build_loca_and_glyf() -> tuple[bytes, bytes]:
             0,  # instructionLength
         )
         + bytes([0x01, 0x01, 0x01, 0x01])  # flags
-        + struct.pack(">hhhh", *x_d)  # xCoordinates
-        + struct.pack(">hhhh", *y_d)  # yCoordinates
+        + struct.pack(">hhhh", 0, 500, 0, -500)  # xCoordinates
+        + struct.pack(">hhhh", 0, 0, 700, 0)  # yCoordinates
     )
 
-    glyf = notdef
     loca = struct.pack(
         ">II",
         0,  # offset[0]
