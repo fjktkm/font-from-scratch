@@ -169,11 +169,8 @@ def build_cmap() -> bytes:
 
 
 def build_loca_and_glyf() -> tuple[bytes, bytes]:
-    pts = [(XMIN, YMIN), (XMAX, YMIN), (XMAX, YMAX), (XMIN, YMAX)]
-    xs = [x for x, _ in pts]
-    ys = [y for _, y in pts]
-    x_d = [xs[0], xs[1] - xs[0], xs[2] - xs[1], xs[3] - xs[2]]
-    y_d = [ys[0], ys[1] - ys[0], ys[2] - ys[1], ys[3] - ys[2]]
+    x_d = [0, 500, 0, -500]
+    y_d = [0, 0, 700, 0]
 
     notdef = (
         struct.pack(
