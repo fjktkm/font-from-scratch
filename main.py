@@ -213,7 +213,7 @@ def build_name() -> bytes:
             ">HHHHHH",
             3,  # platformID (Windows)
             1,  # encodingID (Unicode BMP)
-            0x0409,  # languageID (English - United States)
+            0,  # languageID
             nid,  # nameID
             ln,  # length
             off,  # offset
@@ -274,15 +274,8 @@ def build_sfnt(tables: dict[bytes, bytes]) -> bytes:
             & 0xFFFFFFFF
         )
 
-    def log2floor(n: int) -> int:
-        return (n.bit_length() - 1) if n > 0 else 0
-
     tags = tuple(sorted(tables.keys()))
     num_tables = len(tags)
-    e = log2floor(num_tables)
-    search_range = (1 << e) * 16
-    entry_selector = e
-    range_shift = num_tables * 16 - search_range
 
     raws = [tables[t] for t in tags]
     parts = [pad4(r) for r in raws]
@@ -302,9 +295,9 @@ def build_sfnt(tables: dict[bytes, bytes]) -> bytes:
         ">IHHHH",
         0x00010000,
         num_tables,
-        search_range,
-        entry_selector,
-        range_shift,
+        0,
+        0,
+        0,
     )
 
     font = bytearray(header + b"".join(entries) + b"".join(parts))
