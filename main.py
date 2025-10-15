@@ -232,21 +232,6 @@ def build_name() -> bytes:
     return header + b"".join(entries) + b"".join(strings)
 
 
-def build_post() -> bytes:
-    return struct.pack(
-        ">IIhhIIIII",
-        0x00030000,  # version
-        0,  # italicAngle
-        -75,  # underlinePosition
-        50,  # underlineThickness
-        0,  # isFixedPitch
-        0,  # minMemType42
-        0,  # maxMemType42
-        0,  # minMemType1
-        0,  # maxMemType1
-    )
-
-
 def build_tables() -> dict[bytes, bytes]:
     loca, glyf = build_loca_and_glyf()
     return {
@@ -259,7 +244,6 @@ def build_tables() -> dict[bytes, bytes]:
         b"loca": loca,
         b"glyf": glyf,
         b"name": build_name(),
-        b"post": build_post(),
     }
 
 
